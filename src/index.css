@@ -4,12 +4,15 @@
   font-family: "Roboto", sans-serif;
 }
 
+h1 h2 {
+  color: white;
+}
+
 body {
   background: #0f0f0f;
 }
 
 .bar {
-  background: #264653;
   color: white;
 
   width: 20em;
@@ -21,6 +24,16 @@ body {
   justify-content: center;
 
   position: relative;
+}
+
+.bar .cpu {
+  background: #264653;
+  color: white;
+}
+
+.bar .iface {
+  background: #492653;
+  color: white;
 }
 
 .bar label {
@@ -39,6 +52,16 @@ body {
   bottom: 0;
 
 	transition: width 0.2s;
+}
+
+.bar .bar-inner .cpu {
+  background: #264653;
+  color: white;
+}
+
+.bar .bar-inner .iface {
+  background: #88479a;
+  color: white;
 }
 
 .bar, .bar-inner {
