@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 use sysinfo::{CpuExt, NetworkExt, NetworksExt, System, SystemExt};
 use tokio::sync::broadcast;
 
+const IFACE_ACC_NAME: &str = "if:total";
+
 #[derive(Debug, Default, Serialize, Deserialize, Clone)]
 
 struct NetworkInfo {
@@ -50,18 +52,40 @@ async fn main() {
             sys.refresh_cpu();
             sys.refresh_networks();
             let v: Vec<_> = sys.cpus().iter().map(|cpu| cpu.cpu_usage()).collect();
-            let ifaces: Vec<_> = sys
+            let mut ifaces: Vec<_> = sys
                 .networks()
                 .iter()
                 .map(|(iface, idata)| NetworkInfo {
                     name: iface.to_owned(),
                     rx_bytes: idata.received(),
                     tx_bytes: idata.transmitted(),
-                    rx_bandwidth: (idata.received() * 8) as f64 / (System::MINIMUM_CPU_UPDATE_INTERVAL.as_secs_f64()),
-                    tx_bandwidth: (idata.transmitted() * 8) as f64 / (System::MINIMUM_CPU_UPDATE_INTERVAL.as_secs_f64()),
+                    rx_bandwidth: (idata.received() * 8) as f64
+                        / (System::MINIMUM_CPU_UPDATE_INTERVAL.as_secs_f64()),
+                    tx_bandwidth: (idata.transmitted() * 8) as f64
+                        / (System::MINIMUM_CPU_UPDATE_INTERVAL.as_secs_f64()),
                     ..Default::default()
                 })
                 .collect();
+            let total_iface = ifaces
+                .clone()
+                .into_iter()
+                .reduce(|acc, info| {
+                    // TODO: This should likely be a list of ifaces to filter via configuration
+                    if info.name.contains("lo") {
+                        acc
+                    } else {
+                        NetworkInfo {
+                            name: IFACE_ACC_NAME.to_string(),
+                            rx_bytes: acc.rx_bytes + info.rx_bytes,
+                            tx_bytes: acc.tx_bytes + info.tx_bytes,
+                            rx_bandwidth: acc.rx_bandwidth + info.rx_bandwidth,
+                            tx_bandwidth: acc.tx_bandwidth + info.tx_bandwidth,
+                            ..Default::default()
+                        }
+                    }
+                })
+                .unwrap();
+            ifaces.push(total_iface);
             let _ = tx.send(SystemSnapshot {
                 cpu_usage: v,
                 network_usage: ifaces,
