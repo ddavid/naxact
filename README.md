@@ -4,11 +4,10 @@ Extends the original POC project by network usage statistics.
 
 TODO: 
 - [ ]: Unit tests
+- [ ]: Strong typing without loosing speed via https://www.rspc.dev
 - [ ]: Simple integration tests, especially for WS endpoints
 - [ ]: Simple bootsrapping configuration via clap+serde+yaml
-- [ ]: Leverage axum's `with_state` to inject system constraints, like what the network utilisation budget is for that host.
-- [ ]: Feedback mechanisms for controlling what effects the network utilisation being too high
-  - [ ]: Can we leverage a simple RL algorithm here?
+
 
 ## Forked from
 
